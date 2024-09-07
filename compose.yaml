@@ -1,0 +1,8 @@
+services:
+  server:
+    container_name: direct-download
+    build:
+      context: .
+
+    ports:
+      - "8800:8800"
