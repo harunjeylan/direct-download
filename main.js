@@ -7,63 +7,49 @@ const app = express();
 const port = 8800;
 
 app.get('/download', async (req, res) => {
-    const fileUrl = req.query.url;
-
+    const fileUrl = req.query.url; // Get the file URL from the query params
     if (!fileUrl) {
-        return res.status(400).send('No URL provided');
+        return res.status(400).send('File URL is required.');
     }
 
     try {
+        // Get the file name and extension from the URL
+        const fileName = path.basename(fileUrl);
+        const fileExtension = path.extname(fileName);
+
+        // Download the file
         const response = await axios({
-            method: 'get',
+            method: 'GET',
             url: fileUrl,
-            responseType: 'stream'
+            responseType: 'stream',
         });
 
-        // Get the filename from the Content-Disposition header or use a default name
-        const contentDisposition = response.headers['content-disposition'];
-        let filename = 'downloaded_file';
-        if (contentDisposition) {
-            const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
-            if (filenameMatch) {
-                filename = filenameMatch[1];
-            }
+        // Set appropriate headers for displaying inline based on the file type
+        let contentType;
+        switch (fileExtension) {
+            case '.jpg':
+            case '.jpeg':
+                contentType = 'image/jpeg';
+                break;
+            case '.png':
+                contentType = 'image/png';
+                break;
+            case '.gif':
+                contentType = 'image/gif';
+                break;
+            case '.pdf':
+                contentType = 'application/pdf';
+                break;
+            default:
+                contentType = 'application/octet-stream';
         }
 
-        // Create a temporary file path
-        const tempFilePath = path.join(os.tmpdir(), filename);
-
-        // Pipe the response to a file
-        const writer = fs.createWriteStream(tempFilePath);
-        response.data.pipe(writer);
-
-        // Wait for the download to finish
-        await new Promise((resolve, reject) => {
-            writer.on('finish', resolve);
-            writer.on('error', reject);
-        });
-
-        // Send the file
-        res.sendFile(tempFilePath, {}, (err) => {
-            if (err) {
-                console.error('Error sending file:', err);
-                res.status(500).send('Error sending file');
-            }
-            // Delete the temporary file after sending
-            fs.unlink(tempFilePath, (unlinkErr) => {
-                if (unlinkErr) console.error('Error deleting temporary file:', unlinkErr);
-            });
-        });
-
+        // Set the content type and serve the file inline
+        res.setHeader('Content-Type', contentType);
+        response.data.pipe(res);
     } catch (error) {
-        console.error('Error downloading file:', error);
-        if (error.response) {
-            res.status(error.response.status).send(`Error: ${error.response.statusText}`);
-        } else if (error.request) {
-            res.status(503).send('Error: No response received from the server');
-        } else {
-            res.status(500).send('Error downloading file');
-        }
+        console.error('Error downloading the file:', error);
+        res.status(500).send('Error downloading the file.');
     }
 });
 
