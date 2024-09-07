@@ -7,7 +7,7 @@ const app = express();
 const port = 8800;
 
 app.get('/download', async (req, res) => {
-    const fileUrl = req.query.url; // Get the file URL from the query params
+    const fileUrl = "http://159.69.47.129:8080/download/noco/pe5my6ktgt5htyb/m30o94hsi5b24ce/czzr1pg1riapm9g/Leonardo_Phoenix_IOyS_.jpg" //req.query.url; // Get the file URL from the query params
     if (!fileUrl) {
         return res.status(400).send('File URL is required.');
     }
