@@ -1,11 +1,8 @@
 const express = require('express');
 const axios = require('axios');
-const url = require('url');
-
+const { PassThrough } = require('stream');
 const app = express();
 const port = 8800;
-
-// 4000
 
 app.get('/download', async (req, res) => {
     const fileUrl = req.query.url;
@@ -21,26 +18,26 @@ app.get('/download', async (req, res) => {
             responseType: 'stream'
         });
 
-        const contentDisposition = response.headers['content-disposition'];
-        let filename;
-        if (contentDisposition) {
-            const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-            const matches = filenameRegex.exec(contentDisposition);
-            if (matches != null && matches[1]) {
-                filename = matches[1].replace(/['"]/g, '');
-            }
-        }
-        if (!filename) {
-            filename = url.parse(fileUrl).pathname.split('/').pop();
-        }
+        // Set appropriate headers
+        res.setHeader('Content-Type', response.headers['content-type']);
+        res.setHeader('Content-Disposition', response.headers['content-disposition'] || 'attachment');
 
-        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        res.setHeader('Content-Type', 'application/octet-stream');
-
+        // Pipe the response directly to the client
         response.data.pipe(res);
+
     } catch (error) {
         console.error('Error downloading file:', error);
-        res.status(500).send('Error downloading file');
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            res.status(error.response.status).send(`Error: ${error.response.statusText}`);
+        } else if (error.request) {
+            // The request was made but no response was received
+            res.status(503).send('Error: No response received from the server');
+        } else {
+            // Something happened in setting up the request that triggered an Error
+            res.status(500).send('Error downloading file');
+        }
     }
 });
 
