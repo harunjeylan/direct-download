@@ -23,6 +23,7 @@ app.get('/download', async (req, res) => {
         });
 
         const contentDisposition = response.headers['content-disposition'];
+        const contentType = response.headers['content-type'];
         let filename;
         if (contentDisposition) {
             const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
@@ -36,7 +37,7 @@ app.get('/download', async (req, res) => {
         }
 
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader('Content-Type', contentType);
 
         response.data.pipe(res);
     } catch (error) {
