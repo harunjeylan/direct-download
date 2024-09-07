@@ -25,7 +25,7 @@ async function sendImageFromUrl(imageUrl, caption) {
 
 
 // Example usage
-const imageUrl = "http://localhost:8800/download?url=http://159.69.47.129:8080/download/noco/pe5my6ktgt5htyb/m30o94hsi5b24ce/czzr1pg1riapm9g/download_UFvxx&ext=jpeg"
+const imageUrl = "http://localhost:8800/download?url=http://159.69.47.129:8080/download/noco/pe5my6ktgt5htyb/m30o94hsi5b24ce/czzr1pg1riapm9g/download_UFvxx.jpeg"
 sendImageFromUrl(imageUrl, 'Here is an image!');
 
 

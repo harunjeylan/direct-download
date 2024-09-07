@@ -9,7 +9,6 @@ const port = 8800;
 
 app.get('/download', async (req, res) => {
     const fileUrl = req.query.url;
-    const fileExt = req.query.ext;
 
     if (!fileUrl) {
         return res.status(400).send('No URL provided');
@@ -18,7 +17,7 @@ app.get('/download', async (req, res) => {
     try {
         const response = await axios({
             method: 'get',
-            url: fileUrl + "." + fileExt,
+            url: fileUrl,
             responseType: 'stream'
         });
 
